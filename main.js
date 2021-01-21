@@ -23,7 +23,7 @@ app.use(bodyPareser.json())
 app.get('/', (req, res) => res.render('index'));
 
 app.get('/mod', (req, res)=>{
-  res.sendFile('/mod/')
+  res.render('mod/')
 })
 
 app.post('/mod', bodyPareser.json(),(req,res)=>{
@@ -34,15 +34,21 @@ app.post('/mod', bodyPareser.json(),(req,res)=>{
 
   const outputPath = `./finalFile/${req.body.nameImg}`
 
-  resize(localImg, outputPath, width, height, rotate, cb)
-
-  function cb(){
-    if(req.body.compress){
-      compress(`./finalFile/${req.body.nameImg}`, './finalFile/compressed/')
-    }  
+  if(width == 0 || height == 0){
+    res.render('mod/index',{
+      msg: "width and height cannot be 0"
+    })
+  }else{
+    resize(localImg, outputPath, width, height, rotate, cb)
+    
+    function cb(){
+      if(req.body.compress){
+        compress(`./finalFile/${req.body.nameImg}`, './finalFile/compressed/')
+      }  
+    }
+  
+    res.redirect('/download')
   }
-
-  res.redirect('/download')
 })
 
 app.get('/download', (req,res)=>{
@@ -58,15 +64,6 @@ app.post('/getDownload', (req,res)=>{
   }else{
     res.download(`./finalFile/${nameImg}`)
   }
-
-  function del(){
-    if(compressCheked == 'true'){
-    fs.unlink(`./finalFile/compressed/${nameImg}`)
-    }else{
-    fs.unlink(`./finalFile/${nameImg}`)
-    }
-  }
-
 })
 
 app.post('/upload', (req, res) => {
